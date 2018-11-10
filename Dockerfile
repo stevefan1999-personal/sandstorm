@@ -24,7 +24,7 @@ RUN [ \
 
 # 4. Finally start the server, these default configs are subjectable to the volume change below
 WORKDIR $SERVERDIR/Binaries/Linux/
-CMD ./steamcmd/steamcmd.sh +runscript /home/steam/update-sandstorm.txt && \
+CMD $HOME/steamcmd/steamcmd.sh +runscript /home/steam/update-sandstorm.txt && \
   ./InsurgencyServer-Linux-Shipping \
     port=27102?queryport=27131?MaxPlayers=$MaxPlayers \
     -hostname=$hostname \
