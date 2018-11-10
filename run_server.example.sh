@@ -19,6 +19,6 @@ chmod 777 -R $1
 
 docker run \
   -v $1/Config/:$SERVERDIR/Config/ \
-  -v $1/Saved/Config/LinuxServer/:$SERVERDIR/Saved/Config/LinuxServer/ \
+  -v $1/Saved/:$SERVERDIR/Saved/ \
   ${@:2} \
   stevefan1999/sandstorm 
