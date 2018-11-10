@@ -24,10 +24,11 @@ RUN [ \
 
 # 4. Finally start the server, these default configs are subjectable to the volume change below
 WORKDIR $SERVERDIR/Binaries/Linux/
-CMD ./InsurgencyServer-Linux-Shipping \
-  port=27102?queryport=27131?MaxPlayers=$MaxPlayers \
-  -hostname=$hostname \
-  -Rcon -RconPassword=$RconPassword -RconListenPort=27015
+CMD ./steamcmd/steamcmd.sh +runscript /home/steam/update-sandstorm.txt && \
+  ./InsurgencyServer-Linux-Shipping \
+    port=27102?queryport=27131?MaxPlayers=$MaxPlayers \
+    -hostname=$hostname \
+    -Rcon -RconPassword=$RconPassword -RconListenPort=27015
 
 # These are the port used according to the CMD above, use -p/--port <host-dest>:<container-src> to map as arguments
 EXPOSE 27102 27131 27015 27102/udp 27131/udp 27015/udp
