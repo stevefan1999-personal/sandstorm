@@ -14,6 +14,7 @@ HOME=/home/steam
 SERVERDIR=$HOME/insserver/Insurgency
 
 # Change the directory permission to rwx/rwx/rwx
+mkdir -p $1
 chmod 777 -R $1
 
 docker run \
