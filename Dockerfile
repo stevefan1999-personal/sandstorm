@@ -30,7 +30,7 @@ CMD ./InsurgencyServer-Linux-Shipping \
   -Rcon -RconPassword=$RconPassword -RconListenPort=27015
 
 # These are the port used according to the CMD above, use -p/--port <host-dest>:<container-src> to map as arguments
-EXPOSE 27102 27131 27015
+EXPOSE 27102 27131 27015 27102/udp 27131/udp 27015/udp
 
 # Here's the problem: We should be using a container level unionfs instead of feeding the available volume mount point ourselves
 # Too ghetto I'd say...
