@@ -1,35 +1,41 @@
 ###########################################################
-# Dockerfile that builds a CSGO Gameserver
+# Dockerfile that builds a sandstorm Gameserver
 ###########################################################
+
+# Man this repo is really shit
 FROM cm2network/steamcmd
-LABEL maintainer="walentinlamonos@gmail.com"
+LABEL authors="walentinlamonos@gmail.com, Steve Fan <stevefan1999-personal@github.com>"
+ENV MaxPlayers=8 \
+  hostname="Insurgency Sandstorm Server Example" \
+  RconPassword="hello world"
 
-# Add missing library
-# Run Steamcmd and install CSGO
-RUN ./home/steam/steamcmd/steamcmd.sh +login anonymous \
-        +force_install_dir /home/steam/insserver/ \
-        +app_update 581330 validate \
-        +quit
+# These two arguments should be exposed, but I don't, cause container permission in Docker is too fucked up
+ENV HOME /home/steam
+ENV SERVERDIR $HOME/insserver/Insurgency
 
-RUN { \
-		echo '@ShutdownOnFailedCommand 1'; \
-		echo '@NoPromptForPassword 1'; \
-		echo 'login anonymous'; \
-		echo 'force_install_dir /home/steam/insserver/'; \
-		echo 'app_update 581330'; \
-		echo 'quit'; \
-} > /home/steam/insserver/update.txt
+# 1. Move to container home
+# 2. Copy the update batch from our repository root
+# 3. Run an immutable SteamCMD fetch (BUG: Space consuming!)
+WORKDIR $HOME
+COPY ./update-sandstorm.txt .
+RUN [ \
+  "./steamcmd/steamcmd.sh", \
+  "+runscript /home/steam/update-sandstorm.txt" ]
 
-ENV MaxPlayers=8 hostname="Insurgency Sandstorm Server" RconPassword="hello world"
+# 4. Finally start the server, these default configs are subjectable to the volume change below
+WORKDIR $SERVERDIR/Binaries/Linux/
+CMD [ \
+  "./InsurgencyServer-Linux-Shipping", \
+  "port=27102?queryport=27131?MaxPlayers=$MaxPlayers", \
+  "-hostname=$hostname", \
+  "-Rcon -RconPassword=$RconPassword -RconListenPort=27015" ]
 
-VOLUME /home/steam/insserver
-
-# Set Entrypoint; Technically 2 steps: 1. Update server, 2. Start server
-ENTRYPOINT ./home/steam/steamcmd/steamcmd.sh +login anonymous +force_install_dir /home/steam/insserver +app_update 581330 +quit && \
-        ./home/steam/insserver/Insurgency/Binaries/Linux/InsurgencyServer-Linux-Shipping \
-		port=27102?queryport=27131?MaxPlayers=$MaxPlayers \
-		-hostname=$hostname \
-		-Rcon -RconPassword=$RconPassword -RconListenPort=27015
-
-# Expose ports
+# These are the port used according to the CMD above, use -p/--port <host-dest>:<container-src> to map as arguments
 EXPOSE 27102 27131 27015
+
+# Here's the problem: We should be using a container level unionfs instead of feeding the available volume mount point ourselves
+# Too ghetto I'd say...
+VOLUME [ \
+  "$SERVERDIR/Config/", \
+  "$SERVERDIR/Saved/Config/LinuxServer/" ] 
+# Of course you could go masochist mode that you create a unionfs on your host that distributes to your config directory, but hell knows how to do it
